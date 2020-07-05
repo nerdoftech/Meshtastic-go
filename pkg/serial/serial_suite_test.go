@@ -87,7 +87,7 @@ var _ = Describe("serial port lib tests", func() {
 			err := sp.SendToRadio(fakeData)
 			Expect(err).Should(HaveOccurred())
 		})
-		It("should error on port wake", func() {
+		It("should error on port data write", func() {
 			expErr := errors.New("error")
 			portMock.
 				EXPECT().
@@ -104,12 +104,13 @@ var _ = Describe("serial port lib tests", func() {
 	Context("reader", func() {
 		It("should work", func() {
 			data := []byte{
-				START2, START1, START1, byte(0x99), START1, START1, // Test bad headers of case 0, 1
-				START2, START2, byte(512 >> 8), byte(0), START1, // Tests maximum packet size
-				START1, START2, byte(0), byte(len(fakeData)),
+				START2, START1, START1, 0x99, START1, START1, // Test bad headers on case 0, 1
+				START2, START2, 512 >> 8, 0, START1, // Tests maximum packet size
+				START1, START2, 0, byte(len(fakeData)), // Good header
 			}
 			data = append(data, fakeData...)
-			data = append(data, byte(0x99)) // extra byte test overflow
+			data = append(data, 0x99) // extra byte to test overflow
+
 			msp := &mockPort{data}
 			sp.port = msp
 			go sp.Listen()

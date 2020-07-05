@@ -12,8 +12,8 @@ import (
 
 const (
 	WAIT_AFTER_WAKE = 100 * time.Millisecond
-	START1          = byte(0x94)
-	START2          = byte(0xC3)
+	START1          = 0x94
+	START2          = 0xc3
 	PACKET_MTU      = 512
 	PORT_SPEED      = 921600
 )
@@ -36,7 +36,8 @@ type SerialPort struct {
 	stopped  uint32
 }
 
-// "/dev/ttyUSB0"
+// NewSerialPort configures and returns an instance of SerialPort.
+// device e.g. "/dev/ttyUSB0", recvCh is queue for received packets, mu is mutex for recvCh
 func NewSerialPort(dev string, recvCh chan []byte, mu *sync.Mutex) (*SerialPort, error) {
 	sp := &SerialPort{
 		Config:   &serial.Config{Name: dev, Baud: PORT_SPEED},
@@ -52,6 +53,7 @@ func NewSerialPort(dev string, recvCh chan []byte, mu *sync.Mutex) (*SerialPort,
 	return sp, nil
 }
 
+// SendToRadio wake serial port and send packet to radio. Adds serial header.
 func (s *SerialPort) SendToRadio(data []byte) error {
 	// Wake serial port on radio
 	log.Debug("writing wake packet to port")
@@ -78,13 +80,16 @@ func (s *SerialPort) SendToRadio(data []byte) error {
 	return nil
 }
 
+// Close stop listening and close serial port
 func (s *SerialPort) Close() {
-	log.Debug("Closing serial port")
+	log.Debug("closing serial port")
 	atomic.SwapUint32(&s.stopped, 0)
 	s.port.Flush()
 	s.port.Close()
 }
 
+// Listen starts read stream buffering and parses packet header. Should be run in goroutine
+// Return message as protobuff bytes that still need to be marshalled
 func (s *SerialPort) Listen() {
 	log.Debug("listening to serial port")
 	sb := &serialBuffer{}
@@ -122,15 +127,15 @@ func (s *SerialPort) Listen() {
 			sb.msgLen = sb.lenMsb + sb.lenLsb
 			// Check if packet is too big
 			if sb.msgLen > PACKET_MTU {
-				log.WithField("packet_len", sb.msgLen).Debug("received packet that was too big")
+				log.WithField("packet_len", sb.msgLen).Debug("packet will exceed maximum size, discarding")
 				sb = &serialBuffer{}
 				continue
 			}
-			log.WithField("packet_len", sb.msgLen).Debug("received packet, starting to buffer")
+			log.WithField("packet_len", sb.msgLen).Debug("packet header received, starting to buffer")
 			sb.buf = make([]byte, sb.msgLen)
 		default:
 			pktSize := sb.idx - 4
-			// FIXME, this does not actually work
+			// FIXME, this does not work, for now it seems we cant overflow
 			// Check if packet is too big
 			// if pktSize > sb.msgLen {
 			// 	log.Debug("packet was too big, discarding")

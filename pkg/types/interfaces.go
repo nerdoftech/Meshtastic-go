@@ -12,6 +12,7 @@ import (
 type MeshInterface interface {
 	Connect() error
 	GetRadioConfig() *message.RadioConfig
+	SetRadioConfig(*message.RadioConfig) error
 	Close()
 }
 

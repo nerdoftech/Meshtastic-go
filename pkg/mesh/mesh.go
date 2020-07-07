@@ -96,6 +96,15 @@ func (m *Mesh) GetRadioConfig() *message.RadioConfig {
 	return m.radioConfig
 }
 
+func (m *Mesh) SetRadioConfig(cfg *message.RadioConfig) error {
+	msg := &message.ToRadio{
+		Variant: &message.ToRadio_SetRadio{
+			SetRadio: cfg,
+		},
+	}
+	return m.sendToRadio(msg)
+}
+
 // Sends a WantConfigId msg to transport
 func (m *Mesh) getRadioConfig() error {
 	rand.Seed(time.Now().UnixNano())

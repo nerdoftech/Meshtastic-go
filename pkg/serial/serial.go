@@ -5,7 +5,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/nerdoftech/Meshtastic-go/pkg/types"
+	mt "github.com/nerdoftech/Meshtastic-go/pkg/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/tarm/serial"
 )
@@ -30,7 +30,7 @@ type serialBuffer struct {
 // Type for mesh interface from serial port
 type SerialPort struct {
 	Config   *serial.Config
-	port     types.ReadWriteCloseFlusher
+	port     mt.ReadWriteCloseFlusher
 	recvChan chan []byte
 	recvMu   *sync.Mutex
 	stopped  uint32
@@ -38,19 +38,24 @@ type SerialPort struct {
 
 // NewSerialPort configures and returns an instance of SerialPort.
 // device e.g. "/dev/ttyUSB0", recvCh is queue for received packets, mu is mutex for recvCh
-func NewSerialPort(dev string, recvCh chan []byte, mu *sync.Mutex) (*SerialPort, error) {
+func NewSerialPort(dev string, recvCh chan []byte, mu *sync.Mutex) *SerialPort {
 	sp := &SerialPort{
 		Config:   &serial.Config{Name: dev, Baud: PORT_SPEED},
 		recvChan: recvCh,
 		recvMu:   mu,
 	}
+	return sp
+}
+
+// Connect to serial port
+func (s *SerialPort) Connect() error {
 	var err error
-	sp.port, err = serial.OpenPort(sp.Config)
+	s.port, err = serial.OpenPort(s.Config)
 	if err != nil {
-		log.WithError(err).Error("could not open serial port")
-		return nil, err
+		log.WithError(err).WithField("device", s.Config.Name).Error("could not open serial port")
+		return err
 	}
-	return sp, nil
+	return nil
 }
 
 // SendToRadio wake serial port and send packet to radio. Adds serial header.
@@ -88,7 +93,7 @@ func (s *SerialPort) Close() {
 	s.port.Close()
 }
 
-// Listen starts read stream buffering and parses packet header. Should be run in goroutine
+// Listen starts read stream buffering and parses packet header. Should be run in goroutine.
 // Return message as protobuff bytes that still need to be marshalled
 func (s *SerialPort) Listen() {
 	log.Debug("listening to serial port")

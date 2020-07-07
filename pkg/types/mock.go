@@ -6,8 +6,72 @@ package types
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	message "github.com/nerdoftech/Meshtastic-go/pkg/message"
 	reflect "reflect"
 )
+
+// MockMeshInterface is a mock of MeshInterface interface.
+type MockMeshInterface struct {
+	ctrl     *gomock.Controller
+	recorder *MockMeshInterfaceMockRecorder
+}
+
+// MockMeshInterfaceMockRecorder is the mock recorder for MockMeshInterface.
+type MockMeshInterfaceMockRecorder struct {
+	mock *MockMeshInterface
+}
+
+// NewMockMeshInterface creates a new mock instance.
+func NewMockMeshInterface(ctrl *gomock.Controller) *MockMeshInterface {
+	mock := &MockMeshInterface{ctrl: ctrl}
+	mock.recorder = &MockMeshInterfaceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockMeshInterface) EXPECT() *MockMeshInterfaceMockRecorder {
+	return m.recorder
+}
+
+// Connect mocks base method.
+func (m *MockMeshInterface) Connect() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Connect")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Connect indicates an expected call of Connect.
+func (mr *MockMeshInterfaceMockRecorder) Connect() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockMeshInterface)(nil).Connect))
+}
+
+// GetRadioConfig mocks base method.
+func (m *MockMeshInterface) GetRadioConfig() *message.RadioConfig {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRadioConfig")
+	ret0, _ := ret[0].(*message.RadioConfig)
+	return ret0
+}
+
+// GetRadioConfig indicates an expected call of GetRadioConfig.
+func (mr *MockMeshInterfaceMockRecorder) GetRadioConfig() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRadioConfig", reflect.TypeOf((*MockMeshInterface)(nil).GetRadioConfig))
+}
+
+// Close mocks base method.
+func (m *MockMeshInterface) Close() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Close")
+}
+
+// Close indicates an expected call of Close.
+func (mr *MockMeshInterfaceMockRecorder) Close() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockMeshInterface)(nil).Close))
+}
 
 // MockTransportInterface is a mock of TransportInterface interface.
 type MockTransportInterface struct {
@@ -30,6 +94,20 @@ func NewMockTransportInterface(ctrl *gomock.Controller) *MockTransportInterface 
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTransportInterface) EXPECT() *MockTransportInterfaceMockRecorder {
 	return m.recorder
+}
+
+// Connect mocks base method.
+func (m *MockTransportInterface) Connect() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Connect")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Connect indicates an expected call of Connect.
+func (mr *MockTransportInterfaceMockRecorder) Connect() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Connect", reflect.TypeOf((*MockTransportInterface)(nil).Connect))
 }
 
 // SendToRadio mocks base method.

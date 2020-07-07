@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/nerdoftech/Meshtastic-go/pkg/types"
+	mt "github.com/nerdoftech/Meshtastic-go/pkg/types"
 	log "github.com/sirupsen/logrus"
 
 	. "github.com/onsi/ginkgo"
@@ -46,11 +46,11 @@ func (m *mockPort) Close() error              { return nil }
 func (m *mockPort) Flush() error              { return nil }
 
 var _ = Describe("serial port lib tests", func() {
-	var portMock *types.MockReadWriteCloseFlusher
+	var portMock *mt.MockReadWriteCloseFlusher
 	var sp *SerialPort
 	BeforeEach(func() {
 		ctrl := gomock.NewController(GinkgoT())
-		portMock = types.NewMockReadWriteCloseFlusher(ctrl)
+		portMock = mt.NewMockReadWriteCloseFlusher(ctrl)
 		sp = &SerialPort{
 			port:     portMock,
 			recvChan: make(chan []byte, 1),
@@ -59,7 +59,7 @@ var _ = Describe("serial port lib tests", func() {
 	})
 	Context("test interface", func() {
 		It("should fulfill TransportInterface", func() {
-			var iface types.TransportInterface = sp
+			var iface mt.TransportInterface = NewSerialPort("/dev/null", make(chan []byte, 1), &sync.Mutex{})
 			Expect(sp).Should(BeAssignableToTypeOf(iface))
 		})
 	})
